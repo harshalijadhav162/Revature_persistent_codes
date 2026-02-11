@@ -1,4 +1,27 @@
-﻿namespace DelegatesDemo;
+﻿using System;
+
+namespace DelegatesDemo;
+
+public class OnClickEventArgs : EventArgs
+{
+    public string ButtonName { get; set; }
+}
+
+public class Button
+{
+    public event EventHandler<OnClickEventArgs> OnClick;
+
+    public void Click(string buttonName)
+    {
+        OnClick?.Invoke(this, new OnClickEventArgs
+        {
+            ButtonName = buttonName
+        });
+    }
+}
+
+delegate int MathOperation(int a, int b);
+delegate void GenericTwoParameterAction<TFirst, TSecond>(TFirst a, TSecond b);
 
 class Program
 {
@@ -9,13 +32,8 @@ class Program
     }
 }
 
-delegate int MathOperation(int a, int b);
-
-delegate void GenericTwoParameterAtion<TFirst, TSecond>(TFirst a, TSecond b);
-
 class DelegatesDemoApp
 {
-
     void PrintMessage(string message)
     {
         Console.WriteLine(message);
@@ -28,7 +46,6 @@ class DelegatesDemoApp
 
     public void Run()
     {
-        
         Func<int, int, int> genericOperation = Add;
 
         Action<string> action = PrintMessage;
@@ -36,22 +53,23 @@ class DelegatesDemoApp
 
         Predicate<int> predicate = IsEven;
         int testNumber = 4;
-
         Console.WriteLine($"Is {testNumber} even? {predicate(testNumber)}");
 
         Func<string, string, string> stringOperation = Concatenate;
-
         var x = stringOperation("Hello, ", "World!");
         Console.WriteLine($"Concatenation result: {x}");
 
-        
         genericOperation += Subtract;
         genericOperation += Multiply;
         genericOperation += Divide;
-
         genericOperation -= Subtract;
+
         int result = genericOperation(10, 5);
         Console.WriteLine($"Final result: {result}");
+
+        LambdaExpressionDemo();
+        AnonymousMethodDemo();
+        EventDemo();
     }
 
     public string Concatenate(string a, string b)
@@ -86,11 +104,35 @@ class DelegatesDemoApp
             Console.WriteLine($"The quotient of {a} and {b} is: {a / b}");
             return a / b;
         }
-        else
-        {
-            Console.WriteLine("Cannot divide by zero.");
-        }
         return 0;
     }
-    public void LambdaExpression
+
+    public void LambdaExpressionDemo()
+    {
+        Func<int, int> f = x => x * x;
+        var result = f(5);
+        Console.WriteLine($"Lambda result: {result}");
+    }
+
+    public void AnonymousMethodDemo()
+    {
+        MathOperation operation = delegate (int a, int b)
+        {
+            Console.WriteLine($"Anonymous sum: {a + b}");
+            return a + b;
+        };
+        operation(5, 3);
+    }
+
+    public void EventDemo()
+    {
+        Button button = new Button();
+        button.OnClick += Button_OnClick;
+        button.Click("Submit");
+    }
+
+    void Button_OnClick(object sender, OnClickEventArgs e)
+    {
+        Console.WriteLine($"Button clicked: {e.ButtonName}");
+    }
 }
