@@ -1,5 +1,5 @@
-﻿using System.Diagnostics.Contracts;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace ConsoleApp
 {
@@ -9,19 +9,17 @@ namespace ConsoleApp
         {
             var services = new ServiceCollection();
 
+            // Register dependencies
             services.AddScoped<IMessageReader, TwitterMessageReader>();
-            services.AddScoped<IMessageWriter, InstagramMessageWriter>();
-            services.AddScoped<IMessageWriter, PdfMessageWriter>();
+            services.AddScoped<IMessageWriter, InstagramMessageWriter>(); // Try changing to PdfMessageWriter
             services.AddScoped<IMyLogger, ConsoleLogger>();
             services.AddScoped<App>();
 
             var serviceProvider = services.BuildServiceProvider();
 
-            var app = serviceProvider.GetService<App>();
+            var app = serviceProvider.GetRequiredService<App>();
 
             app.Run();
-
-            
         }
     }
 
@@ -47,14 +45,8 @@ namespace ConsoleApp
         string ReadMessage();
     }
 
-    public class MessageReader : IMessageReader
-    {
-        public string ReadMessage() => "Hello, World!";
-    }
-
     public class TwitterMessageReader : IMessageReader
     {
-        
         public string ReadMessage() => "Hello, From Twitter!";
     }
 
@@ -62,15 +54,6 @@ namespace ConsoleApp
     {
         void WriteMessage(string message);
     }
-
-    public class MessageWriter : IMessageWriter
-    {
-        public void WriteMessage(string message)
-        {
-            Console.WriteLine(message);
-        }
-    }
-
 
     public interface IMyLogger
     {
@@ -88,14 +71,16 @@ namespace ConsoleApp
     public class InstagramMessageWriter : IMessageWriter
     {
         IMyLogger _logger;
+
         public InstagramMessageWriter(IMyLogger logger)
         {
             _logger = logger;
         }
+
         public void WriteMessage(string message)
         {
             _logger.Log();
-            Console.WriteLine($"{message} posted to instagram");
+            Console.WriteLine($"{message} posted to Instagram");
         }
     }
 
@@ -103,8 +88,7 @@ namespace ConsoleApp
     {
         public void WriteMessage(string message)
         {
-            Console.WriteLine($"PDF {message}");
+            Console.WriteLine($"PDF: {message}");
         }
     }
-
 }
